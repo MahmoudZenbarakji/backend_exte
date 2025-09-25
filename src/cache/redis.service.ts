@@ -1,11 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Redis from 'redis';
+import { createClient } from 'redis';
 
 @Injectable()
 export class RedisService {
   private readonly logger = new Logger(RedisService.name);
-  private client: Redis.RedisClientType;
+  private client: ReturnType<typeof createClient>;
 
   constructor(private configService: ConfigService) {
     this.initializeRedis();
@@ -13,7 +13,15 @@ export class RedisService {
 
   private async initializeRedis() {
     try {
-      this.client = Redis.createClient({
+      // Check if Redis is enabled
+      const redisEnabled = this.configService.get('REDIS_ENABLED', 'false') === 'true';
+      
+      if (!redisEnabled) {
+        this.logger.log('Redis is disabled for development');
+        return;
+      }
+
+      this.client = createClient({
         url: this.configService.get('REDIS_URL') || 'redis://localhost:6379',
         socket: {
           reconnectStrategy: (retries) => Math.min(retries * 50, 500),
@@ -36,6 +44,10 @@ export class RedisService {
 
   async get<T>(key: string): Promise<T | null> {
     try {
+      if (!this.client) {
+        this.logger.log(`Redis disabled - returning null for key ${key}`);
+        return null;
+      }
       const value = await this.client.get(key);
       return value ? JSON.parse(value as string) : null;
     } catch (error) {
@@ -46,6 +58,10 @@ export class RedisService {
 
   async set(key: string, value: any, ttl?: number): Promise<boolean> {
     try {
+      if (!this.client) {
+        this.logger.log(`Redis disabled - skipping set for key ${key}`);
+        return true;
+      }
       const serializedValue = JSON.stringify(value);
       if (ttl) {
         await this.client.setEx(key, ttl, serializedValue);
@@ -61,6 +77,10 @@ export class RedisService {
 
   async del(key: string): Promise<boolean> {
     try {
+      if (!this.client) {
+        this.logger.log(`Redis disabled - skipping delete for key ${key}`);
+        return true;
+      }
       await this.client.del(key);
       return true;
     } catch (error) {
@@ -71,6 +91,10 @@ export class RedisService {
 
   async delPattern(pattern: string): Promise<boolean> {
     try {
+      if (!this.client) {
+        this.logger.log(`Redis disabled - skipping delete pattern ${pattern}`);
+        return true;
+      }
       const keys = await this.client.keys(pattern);
       if (keys.length > 0) {
         await this.client.del(keys);
@@ -84,6 +108,10 @@ export class RedisService {
 
   async exists(key: string): Promise<boolean> {
     try {
+      if (!this.client) {
+        this.logger.log(`Redis disabled - returning false for exists ${key}`);
+        return false;
+      }
       const result = await this.client.exists(key);
       return result === 1;
     } catch (error) {
@@ -94,6 +122,10 @@ export class RedisService {
 
   async flushAll(): Promise<boolean> {
     try {
+      if (!this.client) {
+        this.logger.log('Redis disabled - skipping flushAll');
+        return true;
+      }
       await this.client.flushAll();
       return true;
     } catch (error) {
