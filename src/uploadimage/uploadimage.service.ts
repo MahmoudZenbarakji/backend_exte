@@ -4,6 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import * as sharp from 'sharp';
+import { MulterFile } from '../common/interfaces/multer-file.interface';
 
 @Injectable()
 export class UploadService {
@@ -36,7 +37,7 @@ export class UploadService {
     });
   }
 
-  async uploadFile(file: Express.Multer.File, folder: string = 'temp'): Promise<string> {
+  async uploadFile(file: MulterFile, folder: string = 'temp'): Promise<string> {
     // Validate file
     this.validateFile(file);
 
@@ -75,7 +76,7 @@ export class UploadService {
       .toFile(optimizedPath);
   }
 
-  async uploadMultipleFiles(files: Express.Multer.File[], folder: string = 'temp'): Promise<string[]> {
+  async uploadMultipleFiles(files: MulterFile[], folder: string = 'temp'): Promise<string[]> {
     const uploadPromises = files.map(file => this.uploadFile(file, folder));
     return Promise.all(uploadPromises);
   }
@@ -96,7 +97,7 @@ export class UploadService {
     }
   }
 
-  private validateFile(file: Express.Multer.File): void {
+  private validateFile(file: MulterFile): void {
     // Check file size
     if (file.size > this.maxFileSize) {
       throw new BadRequestException(

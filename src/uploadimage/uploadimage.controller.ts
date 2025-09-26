@@ -17,6 +17,7 @@ import { ProductsService } from '../product/product.service';
 import { Roles } from 'src/common/decorators/roles.decorators';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Role } from '../common/enums/role.enum';
+import { MulterFile } from '../common/interfaces/multer-file.interface';
 
 @Controller('upload')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -30,7 +31,7 @@ export class UploadController {
   @Post('single')
   @UseInterceptors(FileInterceptor('file'))
   async uploadSingle(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: MulterFile,
     @Body('folder') folder?: string,
   ) {
     if (!file) {
@@ -48,7 +49,7 @@ export class UploadController {
   @Post('multiple')
   @UseInterceptors(FilesInterceptor('files', 10))
   async uploadMultiple(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: MulterFile[],
     @Body('folder') folder?: string,
   ) {
     if (!files || files.length === 0) {
@@ -65,7 +66,7 @@ export class UploadController {
 
   @Post('product-image')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadProductImage(@UploadedFile() file: Express.Multer.File) {
+  async uploadProductImage(@UploadedFile() file: MulterFile) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -81,7 +82,7 @@ export class UploadController {
   @Post('product-images-multiple')
   @UseInterceptors(FilesInterceptor('files', 10))
   async uploadMultipleProductImages(
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles() files: MulterFile[],
     @Body('color') color?: string,
     @Body('productId') productId?: string,
   ) {
@@ -114,7 +115,7 @@ export class UploadController {
 
   @Post('category-image')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadCategoryImage(@UploadedFile() file: Express.Multer.File) {
+  async uploadCategoryImage(@UploadedFile() file: MulterFile) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -129,7 +130,7 @@ export class UploadController {
 
   @Post('collection-image')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadCollectionImage(@UploadedFile() file: Express.Multer.File) {
+  async uploadCollectionImage(@UploadedFile() file: MulterFile) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
@@ -144,7 +145,7 @@ export class UploadController {
 
   @Post('user-avatar')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadUserAvatar(@UploadedFile() file: Express.Multer.File) {
+  async uploadUserAvatar(@UploadedFile() file: MulterFile) {
     if (!file) {
       throw new BadRequestException('No file provided');
     }
