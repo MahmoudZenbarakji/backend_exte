@@ -30,7 +30,9 @@
     "railway:start": "npm run start:prod",
     "vercel-build": "npm run build",
     "vercel-start": "npm run start:prod",
-    "build": "nest build && npm run prisma:generate"
+    "build": "nest build",
+    "render-build": "npm run build && npm run prisma:generate",
+    "render-start": "npm run start:prod"
   },
   "dependencies": {
     "@nestjs/bull": "^11.0.3",
